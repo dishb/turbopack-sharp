@@ -10,14 +10,16 @@ export async function POST(request: Request) {
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const image = sharp(buffer);
+  const metadata = await image.metadata();
   let pipeline = image.rotate();
   pipeline = pipeline.resize({
     width: 100,
     height: 100,
+    fit: "cover",
+    withoutEnlargement: true,
     kernel: sharp.kernel.lanczos3,
   });
+  const result = await pipeline.jpeg({ quality: 95, mozjpeg: true }).toBuffer();
 
-  await pipeline.toBuffer();
-
-  return new Response("Success", { status: 200 });
+  return new Response(result, { status: 200 });
 }
